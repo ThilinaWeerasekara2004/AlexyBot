@@ -5,7 +5,7 @@
 </h2>
 
 <p align="center">
-  <img src="https://github.com/TashithManuka006/SatanXDBot/blob/master/SatanXDBot/resources/ezgif.com-resize (5).gif">
+  <img src="https://te.legra.ph/file/55bc54b350304833158bb.jpg">
 </p>
 
 _**ᴀᴠᴀɪʟᴀʙʟᴇ ᴏɴ ᴛᴇʟᴇɢʀᴀᴍ ᴀs [ғᴀʟʟᴇɴ ✘ ʀᴏʙᴏᴛ](https://t.me/FallenXRobot)**_
@@ -25,7 +25,7 @@ _**ᴀᴠᴀɪʟᴀʙʟᴇ ᴏɴ ᴛᴇʟᴇɢʀᴀᴍ ᴀs [ғᴀʟʟᴇɴ ✘ 
 ━━━━━━━━━━━━━━━━━━━━
 
 <p align="center">
-  <img src="https://te.legra.ph/file/55bc54b350304833158bb.jpg">
+  <img src="https://te.legra.ph/file/ad4866f4b27f001b8427b.jpg">
 </p>
 
 <p align="center">
