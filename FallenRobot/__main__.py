@@ -72,7 +72,7 @@ def get_readable_time(seconds: int) -> str:
 
 
 PM_START_TEXT = """
-*ʜᴇʏ* {}, 🥀(https://te.legra.ph/file/ad4866f4b27f001b8427b.jpg)
+*ʜᴇʏ* {}, 🥀
 
 *๏ ᴛʜɪs ɪs* {} !
 
@@ -101,6 +101,16 @@ buttons = [
         InlineKeyboardButton(text=" sᴏᴜʀᴄᴇ ", callback_data="gib_source"),
     ],
 ]
+
+@app.on_callback_query(filters.regex("gib_source") & ~BANNED_USERS)
+@languageCB
+async def gib_repo(client, CallbackQuery, _):
+    await CallbackQuery.edit_message_media(
+        InputMediaVideo("https://te.legra.ph/file/f40cc84c13b2954c2ba40.mp4"),
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton(text="ʙᴀᴄᴋ", callback_data=f"settingsback_helper")]]
+        ),
+    )
 
 HELP_STRINGS = f"""
 *» {BOT_NAME} ᴇxᴄʟᴜsɪᴠᴇ ꜰᴇᴀᴛᴜʀᴇs*
