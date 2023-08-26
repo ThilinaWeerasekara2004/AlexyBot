@@ -5,7 +5,7 @@
 </h2>
 
 <p align="center">
-  <img src="https://github.com/TashithManuka006/SatanXDBot/blob/master/SatanXDBot/resources/fglitch.gif">
+  <img src="https://github.com/TashithManuka006/SatanXDBot/blob/master/SatanXDBot/resources/ezgif.com-resize (5).gif">
 </p>
 
 _**ᴀᴠᴀɪʟᴀʙʟᴇ ᴏɴ ᴛᴇʟᴇɢʀᴀᴍ ᴀs [ғᴀʟʟᴇɴ ✘ ʀᴏʙᴏᴛ](https://t.me/FallenXRobot)**_
