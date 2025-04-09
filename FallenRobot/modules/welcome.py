@@ -2,6 +2,7 @@ import html
 import random
 import re
 import time
+import logging
 from contextlib import suppress
 from functools import partial
 
@@ -47,6 +48,37 @@ from FallenRobot.modules.helper_funcs.string_handling import (
 )
 from FallenRobot.modules.log_channel import loggable
 from FallenRobot.modules.sql.global_bans_sql import is_user_gbanned
+
+# --- START AI INTEGRATION AND ENHANCEMENTS ---
+USE_AI_WELCOME = True  # Toggle AI welcome on/off (make this chat-specific if needed)
+
+# Dummy AI Welcome generator (mock, replace with actual OpenAI or similar call)
+def generate_ai_welcome(user_name, chat_name):
+    # You can integrate with your AI provider here, e.g., using OpenAI's API.
+    return f"👋 Welcome, {user_name}, to the awesome group '{chat_name}'! We're thrilled to have you join us. Enjoy your stay! 🎉"
+
+# Reusable permission sets for mute configurations
+SOFT_MUTE_PERMS = ChatPermissions(
+    can_send_messages=True,
+    can_send_media_messages=False,
+    can_send_other_messages=False,
+    can_invite_users=False,
+    can_pin_messages=False,
+    can_send_polls=False,
+    can_change_info=False,
+    can_add_web_page_previews=False,
+)
+STRONG_MUTE_PERMS = ChatPermissions(
+    can_send_messages=False,
+    can_invite_users=False,
+    can_pin_messages=False,
+    can_send_polls=False,
+    can_change_info=False,
+    can_send_media_messages=False,
+    can_send_other_messages=False,
+    can_add_web_page_previews=False,
+)
+# --- END AI INTEGRATION AND ENHANCEMENTS ---
 
 VALID_WELCOME_FORMATTERS = [
     "first",
@@ -113,8 +145,7 @@ def send(update, message, keyboard, backup_message):
             msg = update.effective_message.reply_text(
                 markdown_parser(
                     backup_message + "\nNote: the current message has buttons which "
-                    "use url protocols that are unsupported by "
-                    "telegram. Please update."
+                    "use url protocols that are unsupported by telegram. Please update."
                 ),
                 parse_mode=ParseMode.MARKDOWN,
                 reply_to_message_id=reply,
@@ -136,13 +167,13 @@ def send(update, message, keyboard, backup_message):
         else:
             msg = update.effective_message.reply_text(
                 markdown_parser(
-                    backup_message + "\nNote: An error occured when sending the "
+                    backup_message + "\nNote: An error occurred when sending the "
                     "custom message. Please update."
                 ),
                 parse_mode=ParseMode.MARKDOWN,
                 reply_to_message_id=reply,
             )
-            LOGGER.exception()
+            LOGGER.exception("Welcome message send failure:")
     return msg
 
 
@@ -306,7 +337,7 @@ def new_member(update: Update, context: CallbackContext):
                     valid_format = escape_invalid_curly_brackets(
                         cust_welcome, VALID_WELCOME_FORMATTERS
                     )
-                    res = valid_format.format(
+                    res = generate_ai_welcome(first_name, chat.title) if USE_AI_WELCOME else valid_format.format(
                         first=escape_markdown(first_name),
                         last=escape_markdown(new_mem.last_name or first_name),
                         fullname=escape_markdown(fullname),
@@ -351,16 +382,7 @@ def new_member(update: Update, context: CallbackContext):
                     bot.restrict_chat_member(
                         chat.id,
                         new_mem.id,
-                        permissions=ChatPermissions(
-                            can_send_messages=True,
-                            can_send_media_messages=False,
-                            can_send_other_messages=False,
-                            can_invite_users=False,
-                            can_pin_messages=False,
-                            can_send_polls=False,
-                            can_change_info=False,
-                            can_add_web_page_previews=False,
-                        ),
+                        permissions=SOFT_MUTE_PERMS,
                         until_date=(int(time.time() + 24 * 60 * 60)),
                     )
                 if welc_mutes == "strong":
@@ -413,16 +435,7 @@ def new_member(update: Update, context: CallbackContext):
                     bot.restrict_chat_member(
                         chat.id,
                         new_mem.id,
-                        permissions=ChatPermissions(
-                            can_send_messages=False,
-                            can_invite_users=False,
-                            can_pin_messages=False,
-                            can_send_polls=False,
-                            can_change_info=False,
-                            can_send_media_messages=False,
-                            can_send_other_messages=False,
-                            can_add_web_page_previews=False,
-                        ),
+                        permissions=STRONG_MUTE_PERMS,
                     )
                     job_queue.run_once(
                         partial(check_not_bot, new_mem, chat.id, message.message_id),
@@ -472,8 +485,8 @@ def check_not_bot(member, chat_id, message_id, context):
     if not member_status:
         try:
             bot.unban_chat_member(chat_id, member.id)
-        except:
-            pass
+        except Exception as e:
+            LOGGER.exception(f"Failed to unban user {member.id}: {e}")
 
         try:
             bot.edit_message_text(
@@ -481,8 +494,8 @@ def check_not_bot(member, chat_id, message_id, context):
                 chat_id=chat_id,
                 message_id=message_id,
             )
-        except:
-            pass
+        except Exception as e:
+            LOGGER.exception(f"Failed to edit message during check_not_bot: {e}")
 
 
 def left_member(update: Update, context: CallbackContext):
@@ -800,7 +813,7 @@ def welcomemute(update: Update, context: CallbackContext) -> str:
         elif args[0].lower() in ["strong"]:
             sql.set_welcome_mutes(chat.id, "strong")
             msg.reply_text(
-                "I will now mute people when they join until they prove they're not a bot.\nThey will have 120seconds before they get kicked."
+                "I will now mute people when they join until they prove they're not a bot.\nThey will have 120 seconds before they get kicked."
             )
             return (
                 f"<b>{html.escape(chat.title)}:</b>\n"
@@ -996,7 +1009,7 @@ WELC_MUTE_HELP_TXT = (
     "• `/welcomemute soft`*:* restricts new members from sending media for 24 hours.\n"
     "• `/welcomemute strong`*:* mutes new members till they tap on a button thereby verifying they're human.\n"
     "• `/welcomemute off`*:* turns off welcomemute.\n"
-    "*Note:* Strong mode kicks a user from the chat if they dont verify in 120seconds. They can always rejoin though"
+    "*Note:* Strong mode kicks a user from the chat if they dont verify in 120 seconds. They can always rejoin though"
 )
 
 
